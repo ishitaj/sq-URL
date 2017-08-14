@@ -149,7 +149,7 @@ def api(request):
         # If GET is called on /api, redirect to the front-end for manual entry of url
         return HttpResponseRedirect(reverse('squrl:index'))
     else:
-        return JsonResponse({'message': "Method not Implemented",}, status=405)
+        return JsonResponse({'message': "Method not Implemented or Missing/ Malformed header",}, status=405)
 
 
 def db(request):

@@ -6,7 +6,7 @@ The project has been built in python with Django and hosted on heroku servers. T
 
 A. First way:
 
-1. Query the webservice as an API to send a request object and get a response object.
+1. Query the webservice as an API to send a request object with Custom Header and get a response object.
 
 2. 'http://ijain89.herokuapp.com/api' receives a POST request with JSON body containing key 'url' and value as the URL to shorten.
 
@@ -15,7 +15,7 @@ A. First way:
 #!python
  
 >>> import requests
->>> r = requests.post("http://ijain89.herokuapp.com/api", json = {'url' : 'http://www.google.com'})
+>>> r = requests.post("http://ijain89.herokuapp.com/api", json = {'url' : 'http://www.google.com'}, headers = {'CLIENTNAME' : 'guest'})
 >>> r.content
 >>> b'{"squrl": "http://ijain89.herokuapp.com/cvpo", "target": "http://www.google.com", "creation_date": "2017-08-14T11:02:57.981Z", "access_date": "2017-08-14T11:04:34.255Z", "visits": 2, "message": "This target url was already shortened!"}'
 ```
@@ -28,7 +28,7 @@ A. First way:
 #!python
  
 >>> import requests
->>> r = requests.post("http://ijain89.herokuapp.com/api", json = {'url' : 'https://www.python.org/', 'desired_squrl' : 'python' })
+>>> r = requests.post("http://ijain89.herokuapp.com/api", json = {'url' : 'https://www.python.org/', 'desired_squrl' : 'python' }, headers = {'CLIENTNAME' : 'guest'})
 >>> r.content
 >>> b'{"squrl": "http://ijain89.herokuapp.com/python", "target": "https://www.python.org", "creation_date": "2017-08-14T11:45:09.737Z", "access_date": "2017-08-14T11:45:09.737Z", "visits": 0, "error": "This target url is being shortened now!"}'
 ```
@@ -41,7 +41,7 @@ A. First way:
 #!python
 
 >>> import requests
->>> r = requests.get("http://ijain89.herokuapp.com/cvpo")
+>>> r = requests.get("http://ijain89.herokuapp.com/cvpo", headers = {'CLIENTNAME' : 'guest'})
 >>> r.content
 (returns HTML DOM)
 ```
@@ -54,7 +54,7 @@ A. First way:
 #!python
 
 >>> import requests
->>> r = requests.post('http://ijain89.herokuapp.com/api', json = {'url':'abc'})
+>>> r = requests.post('http://ijain89.herokuapp.com/api', json = {'url':'abc'}, headers = {'CLIENTNAME' : 'guest'})
 >>> r.content
 >>> b'{"error": "The url given to shorten does not exist"}'
 ```
@@ -70,10 +70,12 @@ B. Second way:
 
 4. http://ijain89.herokuapp.com/db gives a database view of which URLs have been stored in the database till date along with the number of times the sqURLs have been visited.
 
-4. When you click on any code corresponding to a URL, you are redirected to the page on the original URL.
+5. When you click on any code corresponding to a URL, you are redirected to the page on the original URL.
 
-5. The visit count of the sqURL already existing in the database is incremented.
+6. The visit count of the sqURL already existing in the database is incremented.
 
+7. The app has been integrated with Google+ via OAuth2.
+TODO: Linking user information with sqURL creation. 
 
 
 C. URL Shortening algorithm:
@@ -98,7 +100,7 @@ D. Optimization & Future improvement:
 
 
 
-E. Configuring backend to be scalable to upto 1000 requests per second:
+E. Configuring backend to be scalable:
 
 1. Distributing the Application and Database on multiple different servers. That will allow usage of independent resources by calls for URL-parsing and checking URL for existence in database.
 
