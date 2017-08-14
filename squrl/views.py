@@ -3,6 +3,8 @@ import random, string
 
 import urllib.parse as urlparse
 
+from django.contrib.auth import logout as auth_logout
+from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
@@ -14,7 +16,7 @@ from .models import Squrls
 from .forms import SqurlForm
  
 
-# Create your views here.
+@login_required(login_url='/soc/login/google-oauth2/?next=/')
 def index(request):
     """
     This view method gets called when Try sqURL link is clicked on index.html
@@ -75,6 +77,12 @@ def index(request):
     return render(request, 'index.html', {'form': form,})
 
 
+def logout_view(request):
+    auth_logout(request)
+    form = SqurlForm()
+    return render(request, 'index.html', {'form': form,})
+
+
 @csrf_exempt
 def api(request):
     """
@@ -87,11 +95,12 @@ def api(request):
             # The json body of the POST request must have a key 'url' containing the url to be shortened
             target = json_data['url'].strip(" ").strip("/")
         except KeyError:
-            # Raise a 404 error if the key does not exist
-            return JsonResponse({'error': 'Please send data with key "url" and value as your target url.'})
+            # Raise a 400 error if the key does not exist
+            return JsonResponse({'error': 'Please send data with keys "url" and "desired_squrl"(optional).'}, status=400)
         squrl = json_data.get('desired_squrl', None)
         slug = ''
         error = ''
+        status = 200
         # Check if the url exists by parsing and finding the scheme. It is 'http' when valid.
         if validate_target_exists(target):
             try:
@@ -107,6 +116,7 @@ def api(request):
                         # Check for existence of squrl in the database to maintain uniqueness
                         if Squrls.objects.get(squrl=squrl):
                             error = "Sorry, Try with a different sqURL! This is already taken!"
+                            status = 400
                     except ObjectDoesNotExist:
                         # Generate the slug and create a new object in database
                         urlobj = Squrls(target=target, squrl=squrl)
@@ -114,6 +124,7 @@ def api(request):
                         slug = settings.BASE_SITE + urlobj.squrl
                         urlobject = urlobj
                         error = "This target url is being shortened now!"
+                        status = 201
                 else:
                     # Generate the slug and create a new object in database
                     squrl_id = Squrls.objects.all().order_by('-squrl_id')[0].squrl_id
@@ -123,6 +134,7 @@ def api(request):
                     slug = settings.BASE_SITE + urlobj.squrl
                     urlobject = urlobj
                     error = "This target url is being shortened now!"
+                    status = 201
             finally:
                 if urlobject:
                     return JsonResponse({'squrl': slug,
@@ -130,15 +142,16 @@ def api(request):
                                          'creation_date': urlobject.creation_date,
                                          'access_date': urlobject.access_date,
                                          'visits': urlobject.visits,
-                                        'error': error,})
-                return JsonResponse({'squrl': slug,
-                                     'error': error,})
+                                         'message': error,}, status=status)
+                return JsonResponse({'message': error,}, status=status)
         else:
             # If url does not exist, return json with error message
-            return JsonResponse({'error': 'The url given to shorten does not exist'})
-
-    # If GET is called on /api, redirect to the front-end for manual entry of url
-    return HttpResponseRedirect(reverse('squrl:index'))
+            return JsonResponse({'error': 'The url given to shorten does not exist'}, status=400)
+    elif request.method == 'GET':
+        # If GET is called on /api, redirect to the front-end for manual entry of url
+        return HttpResponseRedirect(reverse('squrl:index'))
+    else:
+        return JsonResponse({'message': "Method not Implemented",}, status=405)
 
 
 def db(request):

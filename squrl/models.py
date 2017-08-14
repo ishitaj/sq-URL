@@ -8,7 +8,7 @@ class Squrls(models.Model):
     """
     squrl_id = models.AutoField(primary_key=True)
     squrl = models.SlugField(max_length=50, unique=True)
-    target = models.URLField(max_length=200, unique=True)
+    target = models.URLField(max_length=2000, unique=True)
     creation_date = models.DateTimeField(auto_now_add=True)
     access_date = models.DateTimeField(auto_now=True)
     visits = models.IntegerField(default=0)
