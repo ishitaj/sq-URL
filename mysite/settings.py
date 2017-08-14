@@ -25,7 +25,7 @@ BASE_SITE = "http://ijain89.herokuapp.com/"
 SECRET_KEY = 'i+acxn5(akgsn!sr4^qgf(^m&*@+g1@u^t@=8s@axc41ml*f=s'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 TEST_RUNNER = 'mysite.heroku_test_runner.HerokuDiscoverRunner'
 
