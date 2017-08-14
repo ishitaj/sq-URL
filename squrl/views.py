@@ -4,7 +4,6 @@ import random, string
 import urllib.parse as urlparse
 
 from django.contrib.auth import logout as auth_logout
-from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
@@ -16,7 +15,6 @@ from .models import Squrls
 from .forms import SqurlForm
  
 
-@login_required(login_url='/soc/login/google-oauth2/?next=/')
 def index(request):
     """
     This view method gets called when Try sqURL link is clicked on index.html
