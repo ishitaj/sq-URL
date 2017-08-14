@@ -12,5 +12,6 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     url(r'^', include('squrl.urls')),
+    url("^soc/", include("social.apps.django_app.urls", namespace="social")),
     url(r'^adm/', include(admin.site.urls)),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

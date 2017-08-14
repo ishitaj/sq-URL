@@ -29,17 +29,24 @@ DEBUG = True
 
 TEST_RUNNER = 'mysite.heroku_test_runner.HerokuDiscoverRunner'
 
-
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '921838335066-mip62st51o8i8vtqme1hgqp416a8ou9k.apps.googleusercontent.com'
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = 'KfvFVBiQfyiE8YWazcG-yNkI'
 # Application definition
 
 INSTALLED_APPS = (
+    'squrl.apps.SqurlConfig',
+    'social_django',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'squrl.apps.SqurlConfig'
+)
+
+AUTHENTICATION_BACKENDS = (
+    'social.backends.google.GoogleOAuth2',
+    'django.contrib.auth.backends.ModelBackend'
 )
 
 MIDDLEWARE_CLASSES = (

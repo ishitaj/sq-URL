@@ -9,10 +9,10 @@
       <img src="{% static 'squrl-logo.png'%}">
     </a>
     <h1>Project sqURL - squeezed URL</h1>
-      {% if error or url %}
+      {% if error or url or form.errors %}
       <hr>
       <div class="alert alert-info text-center" role="alert">
-        <h4 align="center"><span style="color: #9911ff">{{ error }}</span></h4>
+        <h4 align="center"><span style="color: #9911ff">{{ error }}{{ form.errors.target | striptags }}{{ form.errors.squrl | striptags }}</span></h4>
         {% if url %}
         <h4 align="center">sqURL: 
           <a href="{{ url }}" class="alert-link">{{ url }}</a>
@@ -22,9 +22,8 @@
       {% endif %}
     <form action="{% url 'squrl:index' %}" method="post">
       {% csrf_token %}
-      {{ form.errors }}
       <p><span style="color: #ff0000">* </span>Get me a short sqURL for <span style="color: #000000">{{ form.target }}</span></p>
-      <p>I would like my sqURL to be <span style="color: #000000">{{ form.squrl }}</span><p>
+      <p>I would like my sqURL to be <span style="color: #000000">{{ form.squrl }}</span></p>
       <div align="center">
         <input class="btn btn-lg btn-primary" type="submit" value="Show me magic!" />
       </div>

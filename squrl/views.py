@@ -27,7 +27,7 @@ def index(request):
         error = ''
         # check whether it is valid
         if form.is_valid():
-            target = form.cleaned_data['target']
+            target = form.cleaned_data['target'].strip(" ").strip("/")
             squrl = form.cleaned_data.get('squrl', None)
             # Check if the url exists by parsing and finding th scheme. It is set to 'http' when valid.
             if validate_target_exists(target):
@@ -51,7 +51,7 @@ def index(request):
                             error = "This target url is being shortened now!"
                     else:
                         # Generate the slug and create a new object in database
-                        squrl_id = Squrls.objects.order_by('-squrl_id')[0] + 1
+                        squrl_id = Squrls.objects.all().order_by('-squrl_id')[0].squrl_id
                         slug = get_slug(squrl_id)
                         urlobj = Squrls(target=target, squrl=slug)
                         urlobj.save()
@@ -67,7 +67,8 @@ def index(request):
                              {'error': "The url given to shorten does not exist",})
 
         # If form is invalid, reload the squrl page
-        return HttpResponseRedirect(reverse('squrl:index'))
+        return render(request, 'index.html',
+                      {'form': form,})
 
     # initialize the squrl form
     form = SqurlForm()
@@ -84,7 +85,7 @@ def api(request):
         json_data = json.loads(request.body)
         try:
             # The json body of the POST request must have a key 'url' containing the url to be shortened
-            target = json_data['url']
+            target = json_data['url'].strip(" ").strip("/")
         except KeyError:
             # Raise a 404 error if the key does not exist
             return JsonResponse({'error': 'Please send data with key "url" and value as your target url.'})
@@ -98,6 +99,7 @@ def api(request):
                 # If it does, return the squrl
                 urlobj = Squrls.objects.get(target=target)
                 slug = settings.BASE_SITE + urlobj.squrl
+                urlobject = urlobj
                 error = "This target url was already shortened!"
             except ObjectDoesNotExist:
                 if squrl:
@@ -110,15 +112,25 @@ def api(request):
                         urlobj = Squrls(target=target, squrl=squrl)
                         urlobj.save()
                         slug = settings.BASE_SITE + urlobj.squrl
+                        urlobject = urlobj
                         error = "This target url is being shortened now!"
                 else:
                     # Generate the slug and create a new object in database
-                    slug = get_slug()
+                    squrl_id = Squrls.objects.all().order_by('-squrl_id')[0].squrl_id
+                    slug = get_slug(squrl_id)
                     urlobj = Squrls(target=target, squrl=slug)
                     urlobj.save()
                     slug = settings.BASE_SITE + urlobj.squrl
+                    urlobject = urlobj
                     error = "This target url is being shortened now!"
             finally:
+                if urlobject:
+                    return JsonResponse({'squrl': slug,
+                                         'target': urlobject.target,
+                                         'creation_date': urlobject.creation_date,
+                                         'access_date': urlobject.access_date,
+                                         'visits': urlobject.visits,
+                                        'error': error,})
                 return JsonResponse({'squrl': slug,
                                      'error': error,})
         else:
@@ -166,34 +178,36 @@ def is_squrl_available(slug):
     pass
 
 
-def get_slug(base_10_num):
+def get_slug(squrl_id):
     """
     This method generates a unique slug of length 7 using random function and returns the unique code
     """
+    # This loop will keep running until a unique squrl is found
+    while True:
+        new_id = squrl_id + 1
+        slug = base_64_conversion(new_id)
+        try:
+            # Check for existence in the database to maintain uniqueness
+            Squrls.objects.get(squrl=slug)
+        except:
+            return slug
+    return slug
+
+def base_64_conversion(base_10_num):
     # We want to generate a code of length 7
-    code_len = 7
+    code_len = 4
     # create a string containing all uppercase alphabets, lowercase alphabets and digits. 26 + 26 + 10 = 62
     char_set = string.ascii_uppercase + string.digits + string.ascii_lowercase
     base = len(char_set)
     base_62_num = []
 
-    while code_len > 0:
+    while base_10_num > 0:
         remainder = base_10_num % base
         base_62_num.append(remainder)
         base_10_num //= base
-        code_len -= 1
     base_62_num.reverse()
-    slug = ''.join(char_set[x] for x in base_62_num)
-
-    # This loop will keep running until a unique squrl is found
-    while True:
-        # Randomly pick 7 characters from the character set and join to form a string
-        try:
-            # Check for existence in the database to maintain uniqueness
-            temp = Squrls.objects.get(squrl=slug)
-        except:
-            return slug
-        finally:
-            slug += random.choice(char_set)
-
+    slug = "".join([char_set[x] for x in base_62_num])
+    if len(slug) < code_len:
+        num_chars = abs(len(slug) - code_len)
+        return slug + "".join([random.choice(char_set) for _ in range(num_chars)])
     return slug
