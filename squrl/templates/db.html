@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block content %}
+  <div class="container">
+
+
+<h2>Squeezed URLs Report</h2>
+
+
+<ul>
+  <p>
+    <table align="center" class="table">
+      <tr>
+          <th>sqURL slug</th>
+          <th>Target URL</th>
+          <th>Creation Timestamp</th>
+          <th>Last Access Timestamp</th>
+          <th>Number of Visits via sqURL</th>
+      </tr>
+      {% for item in squrls %}
+      <tr>
+          <td><a href="{{ BASE_SITE }}{{ item.squrl }}">{{ item.squrl }}</a></td>
+          <td><a href="{{ item.target }}">{{ item.target }}</a></td>
+          <td>{{ item.creation_date }}</td>
+          <td>{{ item.access_date }}</td>
+          <td>{{ item.visits }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+  </p>
+</ul>
+
+</div>
+
+{% endblock %}
