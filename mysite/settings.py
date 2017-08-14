@@ -31,6 +31,8 @@ TEST_RUNNER = 'mysite.heroku_test_runner.HerokuDiscoverRunner'
 
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '921838335066-mip62st51o8i8vtqme1hgqp416a8ou9k.apps.googleusercontent.com'
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = 'KfvFVBiQfyiE8YWazcG-yNkI'
+CLIENTNAME='guest'
+
 # Application definition
 
 INSTALLED_APPS = (

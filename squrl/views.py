@@ -13,7 +13,7 @@ from django.http import HttpResponseRedirect, JsonResponse
 
 from .models import Squrls
 from .forms import SqurlForm
- 
+
 
 def index(request):
     """
@@ -86,7 +86,7 @@ def api(request):
     """
     This view exposes the functionality of the url shortener via an api.
     """
-    if request.method == 'POST':
+    if request.method == 'POST' and request.META.get('HTTP_CLIENTNAME', '') == settings.CLIENTNAME:
         # load the request body in json_data
         json_data = json.loads(request.body)
         try:
@@ -145,7 +145,7 @@ def api(request):
         else:
             # If url does not exist, return json with error message
             return JsonResponse({'error': 'The url given to shorten does not exist'}, status=400)
-    elif request.method == 'GET':
+    elif request.method == 'GET' and request.META.get('HTTP_CLIENTNAME', '') == settings.CLIENTNAME:
         # If GET is called on /api, redirect to the front-end for manual entry of url
         return HttpResponseRedirect(reverse('squrl:index'))
     else:
