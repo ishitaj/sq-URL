@@ -139,7 +139,6 @@ def api(request):
                 if urlobject:
                     return JsonResponse({'squrl': slug,
                                          'target': urlobject.target,
-                                         'squrl_user': urlobject.squrl_user,
                                          'creation_date': urlobject.creation_date,
                                          'access_date': urlobject.access_date,
                                          'visits': urlobject.visits,
