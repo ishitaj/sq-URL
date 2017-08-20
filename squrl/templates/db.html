@@ -13,6 +13,7 @@
     <table align="center" class="table">
       <tr>
           <th>sqURL slug</th>
+          <th>sqURL user</th>
           <th>Target URL</th>
           <th>Creation Timestamp</th>
           <th>Last Access Timestamp</th>
@@ -21,6 +22,7 @@
       {% for item in squrls %}
       <tr>
           <td><a href="{{ BASE_SITE }}{{ item.squrl }}">{{ item.squrl }}</a></td>
+          <td>{{ item.squrl_user.email }}</td>
           <td><a href="{{ item.target }}">{{ item.target }}</a></td>
           <td>{{ item.creation_date }}</td>
           <td>{{ item.access_date }}</td>

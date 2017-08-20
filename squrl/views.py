@@ -3,6 +3,7 @@ import random, string
 
 import urllib.parse as urlparse
 
+from django.contrib.auth.models import User
 from django.contrib.auth import logout as auth_logout
 from django.urls import reverse
 from django.conf import settings
@@ -25,6 +26,7 @@ def index(request):
         form = SqurlForm(request.POST)
         slug = ''
         error = ''
+        squrl_user = request.user if request.user.id else User.objects.order_by('id')[0]
         # check whether it is valid
         if form.is_valid():
             target = form.cleaned_data['target'].strip(" ").strip("/")
@@ -45,7 +47,7 @@ def index(request):
                                 error = "Sorry, Try with a different sqURL! This is already taken!"
                         except ObjectDoesNotExist:
                             # Generate the slug and create a new object in database
-                            urlobj = Squrls(target=target, squrl=squrl)
+                            urlobj = Squrls(target=target, squrl=squrl, squrl_user=squrl_user)
                             urlobj.save()
                             slug = settings.BASE_SITE + urlobj.squrl
                             error = "This target url is being shortened now!"
@@ -53,7 +55,7 @@ def index(request):
                         # Generate the slug and create a new object in database
                         squrl_id = Squrls.objects.all().order_by('-squrl_id')[0].squrl_id
                         slug = get_slug(squrl_id)
-                        urlobj = Squrls(target=target, squrl=slug)
+                        urlobj = Squrls(target=target, squrl=slug, squrl_user=squrl_user)
                         urlobj.save()
                         slug = settings.BASE_SITE + urlobj.squrl
                         error = "This target url is being shortened now!"
@@ -77,8 +79,7 @@ def index(request):
 
 def logout_view(request):
     auth_logout(request)
-    form = SqurlForm()
-    return render(request, 'index.html', {'form': form,})
+    return HttpResponseRedirect(reverse('squrl:index'))
 
 
 @csrf_exempt
@@ -99,6 +100,7 @@ def api(request):
         slug = ''
         error = ''
         status = 200
+        squrl_user = request.user if request.user.id else User.objects.order_by('id')[0]
         # Check if the url exists by parsing and finding the scheme. It is 'http' when valid.
         if validate_target_exists(target):
             try:
@@ -117,7 +119,7 @@ def api(request):
                             status = 400
                     except ObjectDoesNotExist:
                         # Generate the slug and create a new object in database
-                        urlobj = Squrls(target=target, squrl=squrl)
+                        urlobj = Squrls(target=target, squrl=squrl, squrl_user=squrl_user)
                         urlobj.save()
                         slug = settings.BASE_SITE + urlobj.squrl
                         urlobject = urlobj
@@ -127,7 +129,7 @@ def api(request):
                     # Generate the slug and create a new object in database
                     squrl_id = Squrls.objects.all().order_by('-squrl_id')[0].squrl_id
                     slug = get_slug(squrl_id)
-                    urlobj = Squrls(target=target, squrl=slug)
+                    urlobj = Squrls(target=target, squrl=slug, squrl_user=squrl_user)
                     urlobj.save()
                     slug = settings.BASE_SITE + urlobj.squrl
                     urlobject = urlobj
@@ -137,6 +139,7 @@ def api(request):
                 if urlobject:
                     return JsonResponse({'squrl': slug,
                                          'target': urlobject.target,
+                                         'squrl_user': urlobject.squrl_user,
                                          'creation_date': urlobject.creation_date,
                                          'access_date': urlobject.access_date,
                                          'visits': urlobject.visits,
@@ -153,8 +156,10 @@ def api(request):
 
 
 def db(request):
-
-    squrls = Squrls.objects.all()
+    if request.user.id:
+        squrls = Squrls.objects.filter(squrl_user__email=request.user.email)
+    else:
+        squrls = Squrls.objects.all()
 
     return render(request, 'db.html', {'squrls': squrls,
                                        'BASE_SITE': settings.BASE_SITE})

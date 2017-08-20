@@ -2,12 +2,12 @@
 {% load staticfiles %}
 
 {% block content %}
-{{ squrl }}
 <div class="jumbotron text-center">
   <div class="container">
     <a href="/" class="squrl-logo">
       <img src="{% static 'squrl-logo.png'%}">
     </a>
+    <h2>Welcome {{ user.username.upper }} to</h2>
     <h1>Project sqURL - squeezed URL</h1>
       {% if error or url or form.errors %}
       <hr>

@@ -33,22 +33,32 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '921838335066-mip62st51o8i8vtqme1hgqp416a8ou9k.a
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = 'KfvFVBiQfyiE8YWazcG-yNkI'
 CLIENTNAME='guest'
 
+LOGIN_URL = '/soc/login/google-oauth2/'
+LOGIN_REDIRECT_URL = '/'
+
 # Application definition
 
 INSTALLED_APPS = (
-    'squrl.apps.SqurlConfig',
-    'social_django',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'social_django',
+    'squrl.apps.SqurlConfig',
 )
 
 AUTHENTICATION_BACKENDS = (
-    'social.backends.google.GoogleOAuth2',
-    'django.contrib.auth.backends.ModelBackend'
+    'social_core.backends.google.GoogleOAuth2',
+    'django.contrib.auth.backends.ModelBackend',
+)
+
+SOCIAL_AUTH_DISCONNECT_PIPELINE = (
+    # 'social.pipeline.disconnect.allowed_to_disconnect',
+    'social.pipeline.disconnect.get_entries',
+    'social.pipeline.disconnect.revoke_tokens',
+    'social.pipeline.disconnect.disconnect',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -63,6 +73,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'social_django.middleware.SocialAuthExceptionMiddleware',
 )
 
 ROOT_URLCONF = 'mysite.urls'
@@ -79,10 +90,14 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'social_django.context_processors.backends',
+                'social_django.context_processors.login_redirect',
             ],
         },
     },
 ]
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_AUTH_EXTRA_ARGUMENTS = {'prompt': 'select_account'}
 
 WSGI_APPLICATION = 'mysite.wsgi.application'
 

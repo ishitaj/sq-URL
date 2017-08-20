@@ -43,7 +43,10 @@
     .jumbotron .squrl-logo img {
         max-width: 100%
     }
-
+    input#logout {
+        background:none;
+        border:none;
+    }
 
   </style>
 </head>
@@ -58,18 +61,26 @@
         <a href="http://ijain89.pythonanywhere.com/"><span class="glyphicon glyphicon-book"></span> Try newsQuest</a>
       </li>
       <li>
-        <a href="https://github.com/ishitaj/sq-URL"><span class="glyphicon glyphicon-book"></span> How to use sqURL</a>
+        <a href="https://github.com/ishitaj/sq-URL"><span class="glyphicon glyphicon-file"></span> How to use sqURL</a>
+      </li>
+      <li>
+        <a href="{% url 'squrl:db' %}"><span class="glyphicon glyphicon-tasks"></span> Take me to the DB</a>
       </li>
     </ul>
     <ul class="nav navbar-nav navbar-right">
       <li class="navbar-right">
-        <a href="{% url 'squrl:logout' %}"><span class="glyphicon glyphicon-log-out"></span> Logout</a>
+        <a>
+        <form action="{% url 'social:disconnect' 'google-oauth2' %}?next=/log" method="POST">
+          {% csrf_token %}
+          <span class="glyphicon glyphicon-log-out"></span><input id="logout" type="submit" value="Logout" />
+        </form>
+        </a>
       </li>
       <li class="navbar-right">
-        <a href="http://ijain89.herokuapp.com/soc/login/google-oauth2/?next=/"><span class="glyphicon glyphicon-log-in"></span> Login</a>
+        <a href="{% url 'social:begin' 'google-oauth2' %}?next={{ request.path }}"><span class="glyphicon glyphicon-log-in"></span>&nbsp;&nbsp;Login</a>
       </li>
       <li class="navbar-right">
-        <a href="http://ijain89.pythonanywhere.com/contact/"><span class="glyphicon glyphicon-user"></span> About Me</a>
+        <a href="http://ijain89.pythonanywhere.com/contact/"><span class="glyphicon glyphicon-user"></span>&nbsp;&nbsp;About Me</a>
       </li>
     </ul>
   </div>
